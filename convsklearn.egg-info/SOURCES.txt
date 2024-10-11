@@ -1,0 +1,8 @@
+README.md
+setup.py
+convsklearn/__init__.py
+convsklearn/convsklearn.py
+convsklearn.egg-info/PKG-INFO
+convsklearn.egg-info/SOURCES.txt
+convsklearn.egg-info/dependency_links.txt
+convsklearn.egg-info/top_level.txt

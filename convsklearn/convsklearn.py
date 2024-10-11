@@ -11,12 +11,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-
 
 class convsklearn:
     def __init__(
@@ -26,17 +25,17 @@ class convsklearn:
             categorical_features,
             transformers,
             target_transformer_pipeline,
-            random_state,
-            test_size,
-            n_layers,
-            max_iter,
-            solver,
-            alpha,
-            learning_rate_init,
-            learning_rate,
-            activation_function,
-            rf_n_estimators,
-            rf_min_samples_leaf
+            n_layers=None,
+            random_state=None,
+            test_size=0.01,
+            max_iter=1000,
+            solver='sgd',
+            alpha=None,
+            learning_rate_init=None,
+            learning_rate='adaptive',
+            activation_function='relu',
+            rf_n_estimators=50,
+            rf_min_samples_leaf=2000
             ):
         self.target_name = target_name
         self.transformers =transformers 
@@ -59,6 +58,7 @@ class convsklearn:
         self.rf_min_samples_leaf = rf_min_samples_leaf
         self.feature_set = numerical_features + categorical_features
         
+        
         print(f"test size: {round(self.test_size*100,0)}%")
         print(f"random state: {self.random_state}")
         print(f"maximum iterations: {self.max_iter}")
@@ -76,7 +76,7 @@ class convsklearn:
     preprocessing
     """
 
-    def split_data_manually(self,
+    def get_train_test_arrays(self,
             train_data, test_data,
             feature_set=None, target_name=None
             ):

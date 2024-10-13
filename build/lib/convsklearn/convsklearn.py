@@ -83,14 +83,16 @@ class convsklearn:
             feature_set = self.feature_set
         if target_name == None:
             target_name = self.target_name
-
-        
         test_X = test_data[feature_set]
         test_y = test_data[target_name]
-        
         train_X = train_data[feature_set]
         train_y = train_data[target_name]
-        return train_X, train_y, test_X, test_y
+        return {
+            'train_X':train_X, 
+            'train_y':train_y, 
+            'test_X':test_X, 
+            'test_y':test_y
+        }
 
     def preprocess(self):
         preprocessor = ColumnTransformer(

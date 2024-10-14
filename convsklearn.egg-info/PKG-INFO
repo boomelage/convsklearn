@@ -5,3 +5,5 @@ Summary: a proprietary package of convenience wrappers for sklearn
 Home-page: https://github.com/boomelage/convsklearn
 Author: RADU-STEFAN BRICIU
 Author-email: radusbriciu@proton.me
+License: MIT
+License-File: LICENSE

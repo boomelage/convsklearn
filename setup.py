@@ -6,6 +6,7 @@ setup(
     author="RADU-STEFAN BRICIU",
     author_email="radusbriciu@proton.me",
     description="a proprietary package of convenience wrappers for sklearn",
+    license="MIT",
     url="https://github.com/boomelage/convsklearn",
     packages=find_packages(),
 )

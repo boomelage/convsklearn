@@ -27,7 +27,6 @@ class convsklearn:
             target_transformer_pipeline,
             n_layers=None,
             random_state=None,
-            test_size=0.01,
             max_iter=1000,
             solver='sgd',
             alpha=0.0001,
@@ -43,7 +42,6 @@ class convsklearn:
         self.categorical_features = categorical_features
         self.feature_set = self.numerical_features + self.categorical_features
         self.random_state = random_state
-        self.test_size = test_size
         self.max_iter = max_iter
         self.n_layers = n_layers
         self.layer_size = len(self.feature_set)
@@ -57,7 +55,6 @@ class convsklearn:
         self.feature_set = numerical_features + categorical_features
         
         
-        print(f"test size: {round(self.test_size*100,0)}%")
         print(f"random state: {self.random_state}")
         print(f"maximum iterations: {self.max_iter}")
         print(f"\ntarget: \n{self.target_name}")

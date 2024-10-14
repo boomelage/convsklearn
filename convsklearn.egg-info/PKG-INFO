@@ -1,3 +1,7 @@
 Metadata-Version: 2.1
 Name: convsklearn
-Version: 0.1
+Version: 0.1.0
+Summary: a proprietary package of convenience wrappers for sklearn
+Home-page: https://github.com/boomelage/convsklearn
+Author: RADU-STEFAN BRICIU
+Author-email: radusbriciu@proton.me

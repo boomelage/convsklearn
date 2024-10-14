@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer, OrdinalEncoder,OneHotEncoder
 
-        
+print("a proprietary package of convenience wrappers for sklearn")       
 """
 [
  'spot_price', 'strike_price', 'w', 'heston_price', 

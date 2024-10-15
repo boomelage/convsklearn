@@ -63,17 +63,17 @@ class convsklearn:
         self.feature_set = numerical_features + categorical_features
         
         
-        print(f"random state: {self.random_state}")
-        print(f"maximum iterations: {self.max_iter}")
-        print(f"\ntarget: \n{self.target_name}")
-        print(f"\nfeatures: \n{self.feature_set}")
-        print("\nfeature transformer(s):")
-        for i in self.transformers:
-            print(f"{i}\n")
-        print("target transformer(s):")
-        for i in self.target_transformer_pipeline:
-            print(i)
-        print()
+        # print(f"random state: {self.random_state}")
+        # print(f"maximum iterations: {self.max_iter}")
+        # print(f"\ntarget: \n{self.target_name}")
+        # print(f"\nfeatures: \n{self.feature_set}")
+        # print("\nfeature transformer(s):")
+        # for i in self.transformers:
+        #     print(f"{i}\n")
+        # print("target transformer(s):")
+        # for i in self.target_transformer_pipeline:
+        #     print(i)
+        # print()
     """            
     ===========================================================================
     preprocessing

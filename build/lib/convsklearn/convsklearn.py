@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep  2 16:24:36 2024
+
+a proprietary class of convenience wrappers for sklearn
+
 
 """
 from sklearn.compose import ColumnTransformer
@@ -18,6 +20,12 @@ import numpy as np
 import time
 
 class convsklearn:
+    """
+
+    a proprietary class of convenience wrappers for sklearn
+
+
+    """
     def __init__(
             self,
             target_name,

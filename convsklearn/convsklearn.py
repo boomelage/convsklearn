@@ -76,7 +76,7 @@ class convsklearn:
                 sparse_output=False),self.categorical_features)
         ]
 
-        target_transformer_pipeline = Pipeline([
+        self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
                 # ("RobustScaler", RobustScaler()),
                 ])

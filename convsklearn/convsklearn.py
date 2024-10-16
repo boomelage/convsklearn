@@ -18,6 +18,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
+from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
+    MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
+        SplineTransformer, PolynomialFeatures, KernelCenterer, \
+            QuantileTransformer, OrdinalEncoder,OneHotEncoder
+
 
 class convsklearn:
     """
@@ -31,8 +36,6 @@ class convsklearn:
             target_name,
             numerical_features,
             categorical_features,
-            transformers,
-            target_transformer_pipeline,
             n_layers=None,
             random_state=None,
             max_iter=1000,
@@ -44,8 +47,6 @@ class convsklearn:
             rf_min_samples_leaf=2000
             ):
         self.target_name = target_name
-        self.transformers =transformers 
-        self.target_transformer_pipeline = target_transformer_pipeline
         self.numerical_features = numerical_features
         self.categorical_features = categorical_features
         self.feature_set = self.numerical_features + self.categorical_features
@@ -62,18 +63,24 @@ class convsklearn:
         self.rf_min_samples_leaf = rf_min_samples_leaf
         self.feature_set = numerical_features + categorical_features
         
-        
-        # print(f"random state: {self.random_state}")
-        # print(f"maximum iterations: {self.max_iter}")
-        # print(f"\ntarget: \n{self.target_name}")
-        # print(f"\nfeatures: \n{self.feature_set}")
-        # print("\nfeature transformer(s):")
-        # for i in self.transformers:
-        #     print(f"{i}\n")
-        # print("target transformer(s):")
-        # for i in self.target_transformer_pipeline:
-        #     print(i)
-        # print()
+        self.transformers = [
+            # ("QuantileTransformer",QuantileTransformer(),numerical_features),
+            ("StandardScaler",StandardScaler(),numerical_features),
+            # ("MinMaxScaler",MinMaxScaler(),numerical_features),
+            # ("MaxAbsScaler",MaxAbsScaler(),numerical_features),
+            # ("PowerTransformer",PowerTransformer(),numerical_features),
+            # ("Normalizer",Normalizer(),numerical_features),
+            
+            # ("OrdinalEncoder", OrdinalEncoder(),categorical_features),
+            ("OneHotEncoder", OneHotEncoder(
+                sparse_output=False),self.categorical_features)
+        ]
+
+        target_transformer_pipeline = Pipeline([
+                ("StandardScaler", StandardScaler()),
+                # ("RobustScaler", RobustScaler()),
+                ])
+
     """            
     ===========================================================================
     preprocessing

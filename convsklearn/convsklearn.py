@@ -273,10 +273,10 @@ class convsklearn:
         outofsample_MAE = np.average(np.abs(outofsample_diff))
         
         print("\nin sample:"
-              f"\n     RSME: {insample_RMSE}"
+              f"\n     RMSE: {insample_RMSE}"
               f"\n     MAE: {insample_MAE}")
         print("\nout of sample:"
-              f"\n     RSME: {outofsample_RMSE}"
+              f"\n     RMSE: {outofsample_RMSE}"
               f"\n     MAE: {outofsample_MAE}")
         
         insample = train_data.copy()

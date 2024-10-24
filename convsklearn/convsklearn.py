@@ -262,12 +262,12 @@ class convsklearn:
         test_X = test_data[self.feature_set]
         test_y = test_data[self.target_name]
         
-        insample_prediction = model_fit.predict(train_X)
+        insample_prediction = np.maximum(model_fit.predict(train_X),0)
         insample_diff = insample_prediction - train_y
         insample_RMSE = np.sqrt(np.average(insample_diff**2))
         insample_MAE = np.average(np.abs(insample_diff))
         
-        outofsample_prediction = model_fit.predict(test_X)
+        outofsample_prediction = np.maximum(model_fit.predict(test_X))
         outofsample_diff = outofsample_prediction-test_y
         outofsample_RMSE = np.sqrt(np.average(outofsample_diff**2))
         outofsample_MAE = np.average(np.abs(outofsample_diff))
@@ -306,7 +306,7 @@ class convsklearn:
         training_results = test_X.copy()
         training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
         training_results['target'] = test_y
-        training_results['prediciton'] = model_fit.predict(test_X)
+        training_results['prediciton'] = np.maximum(model_fit.predict(test_X),0)
         training_results['abs_relative_error'] = abs(
             training_results['prediciton']/training_results['target']-1)
         

@@ -267,7 +267,7 @@ class convsklearn:
         insample_RMSE = np.sqrt(np.average(insample_diff**2))
         insample_MAE = np.average(np.abs(insample_diff))
         
-        outofsample_prediction = np.maximum(model_fit.predict(test_X))
+        outofsample_prediction = np.maximum(model_fit.predict(test_X),0)
         outofsample_diff = outofsample_prediction-test_y
         outofsample_RMSE = np.sqrt(np.average(outofsample_diff**2))
         outofsample_MAE = np.average(np.abs(outofsample_diff))

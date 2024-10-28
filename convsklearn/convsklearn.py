@@ -94,6 +94,12 @@ class convsklearn:
             'test_y':test_y
         }
 
+    def get_X(self, df):
+        return df[self.feature_set]
+
+    def get_y(self, df):
+        return df[self.target_name].values
+
     def preprocess(self):
         return ColumnTransformer(transformers=self.transformers)
     

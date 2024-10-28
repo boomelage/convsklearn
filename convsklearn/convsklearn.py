@@ -103,7 +103,7 @@ class convsklearn:
     def get_y(self, df):
         return df[self.target_name].values
 
-    def preprocess(self):
+    def preprocessor(self):
         return ColumnTransformer(transformers=self.transformers)
     
     """

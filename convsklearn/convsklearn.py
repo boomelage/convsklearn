@@ -56,7 +56,10 @@ class convsklearn:
             'hidden_layer_sizes': (self.n_features, self.n_features), 
             'learning_rate': 'adaptive', 
             'learning_rate_init': 0.1, 
-            'solver': 'sgd'
+            'solver': 'sgd',
+            'early_stopping': False, 
+            'max_iter': 500,
+            'warm_start': True
         }
         
         self.transformers = [

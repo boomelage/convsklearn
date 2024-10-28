@@ -49,36 +49,24 @@ class convsklearn:
         self.target_name = target_name
         self.numerical_features = numerical_features
         self.categorical_features = categorical_features
-        self.feature_set = self.numerical_features + self.categorical_features
-        self.random_state = random_state
-        self.max_iter = max_iter
-        self.n_layers = n_layers
-        self.layer_size = len(self.feature_set)
-        self.hidden_layer_sizes = (self.layer_size,)*3
-        self.solver = solver
-        self.alpha = alpha
-        self.learning_rate = learning_rate
-        self.activation_function = activation_function
-        self.rf_n_estimators = rf_n_estimators
-        self.rf_min_samples_leaf = rf_min_samples_leaf
         self.feature_set = numerical_features + categorical_features
+        self.n_features = len(self.feature_set)
+        self.dnn_params = {
+            'alpha': 0.01, 
+            'hidden_layer_sizes': (self.n_features, self.n_features), 
+            'learning_rate': 'adaptive', 
+            'learning_rate_init': 0.1, 
+            'solver': 'sgd'
+        }
         
         self.transformers = [
-            # ("QuantileTransformer",QuantileTransformer(),numerical_features),
             ("StandardScaler",StandardScaler(),numerical_features),
-            # ("MinMaxScaler",MinMaxScaler(),numerical_features),
-            # ("MaxAbsScaler",MaxAbsScaler(),numerical_features),
-            # ("PowerTransformer",PowerTransformer(),numerical_features),
-            # ("Normalizer",Normalizer(),numerical_features),
-            
-            # ("OrdinalEncoder", OrdinalEncoder(),categorical_features),
             ("OneHotEncoder", OneHotEncoder(
                 sparse_output=False),self.categorical_features)
         ]
 
         self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
-                # ("RobustScaler", RobustScaler()),
                 ])
 
     """            
@@ -107,36 +95,17 @@ class convsklearn:
         }
 
     def preprocess(self):
-        preprocessor = ColumnTransformer(
-            transformers=self.transformers)
-        return preprocessor
+        return ColumnTransformer(transformers=self.transformers)
     
     """
     ===========================================================================
     model estimation
     """
     def run_nnet(self, preprocessor, train_X, train_y):
-        specs = [
-            "Single Layer Network",
-            f"hidden layer size: {self.layer_size}",
-            f"learning rate: {self.learning_rate}",
-            f"activation: {self.activation_function}",
-            f"solver: {self.solver}",
-            f"alpha: {self.alpha}"
-        ]
-        for spec in specs:
-            print(spec)
-        print('\ntraining...')
 
         nnet_start = time.time()
         
-        nnet_model = MLPRegressor(
-            hidden_layer_sizes=self.layer_size,
-            activation=self.activation_function,
-            solver=self.solver,
-            max_iter=self.max_iter,
-            random_state=self.random_state
-            )
+        nnet_model = MLPRegressor()
             
         nnet_pipeline = Pipeline([
             ("preprocessor", preprocessor),
@@ -151,30 +120,15 @@ class convsklearn:
         model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
-        return model_fit, nnet_runtime, specs
-    
+        print(f"cpu: {nnet_runtime}")
+        return model_fit
+
     def run_dnn(self, preprocessor,train_X,train_y):
-        specs= [
-            "Deep Neural Network",
-            f"hidden layers sizes: {self.hidden_layer_sizes}",
-            f"learning rate: {self.learning_rate}",
-            f"activation: {self.activation_function}",
-            f"solver: {self.solver}",
-            f"alpha: {self.alpha}"
-            ]
         print('\ntraining...\n')
-        for spec in specs:
-            print(spec)
+        for p,v in self.dnn_params.items():
+            print(f"{p}: {v}")
         dnn_start = time.time()
-        deepnnet_model = MLPRegressor(
-            hidden_layer_sizes= self.hidden_layer_sizes,
-            activation = self.activation_function, 
-            solver= self.solver,
-            alpha = self.alpha,
-            learning_rate = self.learning_rate,
-            max_iter = self.max_iter, 
-            random_state = self.random_state,
-            )
+        deepnnet_model = MLPRegressor(**self.dnn_params)
                                   
         dnn_pipeline = Pipeline([
             ("preprocessor", preprocessor),
@@ -189,22 +143,13 @@ class convsklearn:
         model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
-        return model_fit, dnn_runtime, specs
+        print(f"cpu: {dnn_runtime}")
+        return model_fit
     
     def run_rf(self, preprocessor, train_X, train_y):
-        specs = ["Random Forest",
-        f"number of estimators: {self.rf_n_estimators}",
-        f"minimum samples per leaf: {self.rf_min_samples_leaf}"]
-        print('\ntraining...')
-        for spec in specs:
-            print(spec)
         rf_start = time.time()
         
-        rf_model = RandomForestRegressor(
-            n_estimators=self.rf_n_estimators, 
-            min_samples_leaf=self.rf_min_samples_leaf, 
-            random_state=self.random_state,
-        )
+        rf_model = RandomForestRegressor()
         
         rf_pipeline = Pipeline([
             ("preprocessor", preprocessor),
@@ -219,31 +164,27 @@ class convsklearn:
         
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
-        return model_fit, rf_runtime, specs
+        print(f"cpu: {rf_runtime}")
+        return model_fit
     
     def run_lm(self, train_X, train_y):
-        specs = ["Lasso Regression",f"alpha: {self.alpha}"]
-        print('\ntraining...')
-        for spec in specs:
-            print(spec)
         lm_start = time.time()
         lm_pipeline = Pipeline([
-            ("polynomial", PolynomialFeatures(degree=5, 
-                                    interaction_only=False, 
-                                    include_bias=True)),
+            ("polynomial", PolynomialFeatures(degree=5, interaction_only=False, include_bias=True)),
             ("scaler", StandardScaler()),
-            ("regressor", Lasso(alpha=self.alpha))])
+            ("regressor", Lasso(alpha=self.alpha))
+        ])
         
         lm_scaled = TransformedTargetRegressor(
             regressor=lm_pipeline,
             transformer=self.target_transformer_pipeline 
         )
-        
+
         model_fit = lm_scaled.fit(train_X, train_y)
-        
         lm_end = time.time()
         lm_runtime = lm_end - lm_start
-        return model_fit, lm_runtime, specs
+        print(f"cpu: {lm_runtime}")
+        return model_fit
 
 
     """

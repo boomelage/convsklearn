@@ -59,7 +59,8 @@ class convsklearn:
             'solver': 'sgd',
             'early_stopping': False, 
             'max_iter': 500,
-            'warm_start': True
+            'warm_start': True,
+            'tol': 0.0001
         }
         
         self.transformers = [

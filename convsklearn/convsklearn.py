@@ -128,7 +128,7 @@ class convsklearn:
         
         model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
-        nnet_runtime = int(nnet_end - nnet_start)
+        nnet_runtime = nnet_end - nnet_start
         print(f"cpu: {nnet_runtime}")
         return model_fit
 
@@ -151,7 +151,7 @@ class convsklearn:
         
         model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
-        dnn_runtime = int(dnn_end - dnn_start)
+        dnn_runtime = dnn_end - dnn_start
         print(f"cpu: {dnn_runtime}")
         return model_fit
     

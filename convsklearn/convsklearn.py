@@ -229,7 +229,7 @@ class convsklearn:
         print("\nout of sample:"
               f"\n     RMSE: {outofsample_RMSE}"
               f"\n     MAE: {outofsample_MAE}")
-        
+        train_data,test_data = train_data.copy(),test_data.copy()
         train_data['insample_target'] = train_y
         train_data['insample_prediction'] = insample_prediction 
         train_data['insample_error'] = insample_diff 

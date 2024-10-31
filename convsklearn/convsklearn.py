@@ -204,9 +204,9 @@ class convsklearn:
     
     def test_prediction_accuracy(
             self,
-            model_fit,
+            train_data,
             test_data,
-            train_data
+            model_fit
             ):
         train_X = train_data[self.feature_set]
         train_y = train_data[self.target_name]
@@ -230,28 +230,15 @@ class convsklearn:
               f"\n     RMSE: {outofsample_RMSE}"
               f"\n     MAE: {outofsample_MAE}")
         
-        insample = train_data.copy()
-        insample['insample_target'] = train_y
-        insample['insample_prediction'] = insample_prediction 
-        insample['insample_error'] = insample_diff 
+        train_data['insample_target'] = train_y
+        train_data['insample_prediction'] = insample_prediction 
+        train_data['insample_error'] = insample_diff 
         
-        outsample = test_data.copy()
-        outsample['outofsample_target'] = test_y
-        outsample['outofsample_prediction'] = outofsample_prediction
-        outsample['outofsample_error'] = outofsample_diff
+        test_data['outofsample_target'] = test_y
+        test_data['outofsample_prediction'] = outofsample_prediction
+        test_data['outofsample_error'] = outofsample_diff
         
-        errors = pd.Series(
-            [
-                insample_RMSE,insample_MAE,
-                outofsample_RMSE,outofsample_MAE
-                ],
-            index=[
-                'insample_RMSE','insample_MAE',
-                'outofsample_RMSE','outofsample_MAE'],
-            dtype=float
-            )
-        
-        return insample, outsample, errors
+        return {'train_data':train_data,'test_data':test_data}
         
     def test_model(self,test_data,test_X,test_y,model_fit):
         training_results = test_X.copy()

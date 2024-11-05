@@ -107,7 +107,7 @@ class convsklearn:
     def preprocess(self):
         return ColumnTransformer(transformers=self.transformers)
 
-    def preprocess_data(dataset,development_dates,test_dates,trainer):
+    def preprocess_data(self,dataset,development_dates,test_dates,trainer):
         try:
             train_data = dataset[dataset['date'].isin(development_dates)].sort_values(by='date')
             test_data = dataset[dataset['date'].isin(test_dates)].sort_values(by='date')

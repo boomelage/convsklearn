@@ -133,10 +133,11 @@ class convsklearn:
         print(f"cpu: {nnet_runtime}")
         return model_fit
 
-    def run_dnn(self, preprocessor,train_X,train_y):
-        print('\ntraining...\n')
-        for p,v in self.dnn_params.items():
-            print(f"{p}: {v}")
+    def run_dnn(self, preprocessor,train_X,train_y,print_details=True):
+        if print_details == True:
+            print('\ntraining...\n')
+            for p,v in self.dnn_params.items():
+                print(f"{p}: {v}")
         dnn_start = time.time()
         deepnnet_model = MLPRegressor(**self.dnn_params)
                                   
@@ -153,7 +154,8 @@ class convsklearn:
         model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = dnn_end - dnn_start
-        print(f"cpu: {dnn_runtime}")
+        if print_details==True:
+            print(f"cpu: {dnn_runtime}")
         return model_fit
     
     def run_rf(self, preprocessor, train_X, train_y):

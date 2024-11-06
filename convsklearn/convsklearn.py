@@ -8,20 +8,13 @@ a proprietary class of convenience wrappers for sklearn
 """
 from sklearn.compose import ColumnTransformer
 from sklearn.neural_network import MLPRegressor
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.compose import TransformedTargetRegressor
-from sklearn.linear_model import Lasso
-from plotnine import ggplot, aes, geom_point, labs, theme
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time
-from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
-    MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
-        SplineTransformer, PolynomialFeatures, KernelCenterer, \
-            QuantileTransformer, OrdinalEncoder,OneHotEncoder
 
 
 class convsklearn:
@@ -80,6 +73,8 @@ class convsklearn:
         self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
                 ])
+        self.train_data = {}
+        self.test_data = {}
         self.train_X = {}
         self.train_y = {}
         self.test_X = {}
@@ -88,6 +83,7 @@ class convsklearn:
         self.pipeline = None
         self.model = None
         self.model_fit = None
+        self.dnn_runtime = 0
 
 
     """            
@@ -186,7 +182,7 @@ class convsklearn:
         dnn_end = time.time()
         self.dnn_runtime = dnn_end - dnn_start
         if print_details==True:
-            print(f"cpu: {dnn_runtime}")
+            print(f"cpu: {self.dnn_runtime}")
         return self.model_fit
 
     """
@@ -194,24 +190,15 @@ class convsklearn:
     standard model testing
     """
     
-    def test_prediction_accuracy(
-            self,
-            train_data,
-            test_data,
-            model_fit
-            ):
-        train_X = train_data[self.feature_set]
-        train_y = train_data[self.target_name]
-        test_X = test_data[self.feature_set]
-        test_y = test_data[self.target_name]
+    def test_prediction_accuracy(self):
         
-        insample_prediction = np.maximum(model_fit.predict(train_X),0)
-        insample_diff = insample_prediction - train_y
+        insample_prediction = np.maximum(model_fit.predict(self.train_X),0)
+        insample_diff = insample_prediction - self.train_y
         insample_RMSE = np.sqrt(np.average(insample_diff**2))
         insample_MAE = np.average(np.abs(insample_diff))
         
-        outofsample_prediction = np.maximum(model_fit.predict(test_X),0)
-        outofsample_diff = outofsample_prediction-test_y
+        outofsample_prediction = np.maximum(self.model_fit.predict(self.test_X),0)
+        outofsample_diff = outofsample_prediction-self.test_y
         outofsample_RMSE = np.sqrt(np.average(outofsample_diff**2))
         outofsample_MAE = np.average(np.abs(outofsample_diff))
         
@@ -221,13 +208,12 @@ class convsklearn:
         print("\nout of sample:"
               f"\n     RMSE: {outofsample_RMSE}"
               f"\n     MAE: {outofsample_MAE}")
-        train_data,test_data = train_data.copy(),test_data.copy()
-        train_data['insample_target'] = train_y
-        train_data['insample_prediction'] = insample_prediction 
-        train_data['insample_error'] = insample_diff 
+        self.train_data['insample_target'] = self.train_y
+        self.train_data['insample_prediction'] = insample_prediction 
+        self.train_data['insample_error'] = insample_diff 
         
-        test_data['outofsample_target'] = test_y
-        test_data['outofsample_prediction'] = outofsample_prediction
-        test_data['outofsample_error'] = outofsample_diff
+        self.test_data['outofsample_target'] = self.test_y
+        self.test_data['outofsample_prediction'] = outofsample_prediction
+        self.test_data['outofsample_error'] = outofsample_diff
         
-        return {'train_data':train_data,'test_data':test_data}
+        return {'train_data':self.train_data,'test_data':self.test_data}

@@ -33,24 +33,32 @@ class convsklearn:
     """
     def __init__(
             self,
-            target_name,
-            numerical_features,
-            categorical_features,
-            n_layers=None,
-            random_state=None,
-            max_iter=1000,
-            solver='sgd',
-            alpha=0.0001,
-            learning_rate='adaptive',
-            activation_function='relu',
-            rf_n_estimators=50,
-            rf_min_samples_leaf=2000
+            target_name=None,
+            numerical_features=None,
+            categorical_features=None
             ):
-        self.target_name = target_name
-        self.numerical_features = numerical_features
-        self.categorical_features = categorical_features
-        self.feature_set = numerical_features + categorical_features
-        self.n_features = len(self.feature_set)
+        if target_name is not 'target_name':
+            self.target_name = target_name
+        else:
+            self.target_name = 'target_name'
+
+        if numerical_features is not None:
+            self.numerical_features = numerical_features
+        else:
+            self.numerical_features = []
+
+        if categorical_features is not None:
+            self.categorical_features = categorical_features
+        else:
+            self.categorical_features = []
+
+        if len(self.numerical_features)+len(self.categorical_features)>0:
+            self.feature_set = self.numerical_features + self.categorical_features
+            self.n_features = len(self.feature_set)
+        else:
+            self.feature_set = []
+            self.n_features = 0
+
         self.dnn_params = {
             'alpha': 0.01, 
             'hidden_layer_sizes': (self.n_features, self.n_features), 
@@ -64,7 +72,7 @@ class convsklearn:
         }
         
         self.transformers = [
-            ("StandardScaler",StandardScaler(),numerical_features),
+            ("StandardScaler",StandardScaler(),self.numerical_features),
             ("OneHotEncoder", OneHotEncoder(
                 sparse_output=False),self.categorical_features)
         ]
@@ -72,6 +80,15 @@ class convsklearn:
         self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
                 ])
+        self.train_X = {}
+        self.train_y = {}
+        self.test_X = {}
+        self.test_y = {}
+        self.preprocessor = None
+        self.pipeline = None
+        self.model = None
+        self.model_fit = None
+
 
     """            
     ===========================================================================
@@ -85,8 +102,13 @@ class convsklearn:
         
         if feature_set == None:
             feature_set = self.feature_set
+            if len(feature_set)==0:
+                raise('no feautres specified')
         if target_name == None:
             target_name = self.target_name
+            if target_name == None:
+                raise('no target specified')
+
         test_X = test_data[feature_set]
         test_y = test_data[target_name]
         train_X = train_data[feature_set]
@@ -98,132 +120,74 @@ class convsklearn:
             'test_y':test_y
         }
 
-    def get_X(self, df):
-        return df[self.feature_set]
 
-    def get_y(self, df):
-        return df[self.target_name].values
-
-    def preprocess(self):
-        return ColumnTransformer(transformers=self.transformers)
-
-    def preprocess_data(self,dataset,development_dates,test_dates,trainer):
+    def preprocess_data(self,dataset,development_dates,test_dates):
+        self.dataset = dataset
+        self.development_dates = development_dates
+        self.test_dates = test_dates
         try:
-            train_data = dataset[dataset['date'].isin(development_dates)].sort_values(by='date')
-            test_data = dataset[dataset['date'].isin(test_dates)].sort_values(by='date')
+            self.train_data = dataset[dataset['date'].isin(development_dates)].sort_values(by='date')
+            self.test_data = dataset[dataset['date'].isin(test_dates)].sort_values(by='date')
         except Exception:
-            train_data = dataset[dataset['calculation_date'].isin(development_dates)].sort_values(by='calculation_date')
-            test_data = dataset[dataset['calculation_date'].isin(test_dates)].sort_values(by='calculation_date')
+            self.train_data = dataset[dataset['calculation_date'].isin(development_dates)].sort_values(by='calculation_date')
+            self.test_data = dataset[dataset['calculation_date'].isin(test_dates)].sort_values(by='calculation_date')
 
-        trainplotx = pd.date_range(start=min(development_dates),end=max(development_dates),periods=train_data.shape[0])
-        testplotx = pd.date_range(start=min(test_dates),end=max(test_dates),periods=test_data.shape[0])
+        trainplotx = pd.date_range(start=min(self.development_dates),end=max(self.development_dates),periods=self.train_data.shape[0])
+        testplotx = pd.date_range(start=min(self.test_dates),end=max(self.test_dates),periods=self.test_data.shape[0])
 
         plt.figure()
-        plt.plot(testplotx,test_data['spot_price'].values,color='purple',label='out-of-sample')
-        plt.plot(trainplotx,train_data['spot_price'].values,color='green',label='in-sample')
+        plt.plot(testplotx,self.test_data['spot_price'].values,color='purple',label='out-of-sample')
+        plt.plot(trainplotx,self.train_data['spot_price'].values,color='green',label='in-sample')
         plt.xticks(rotation=45)
         plt.legend(loc='upper left')
         plt.show()
-        arrs = trainer.get_train_test_arrays(
-        train_data, test_data)
-        train_X = arrs['train_X']
-        train_y = arrs['train_y']
-        test_X = arrs['test_X']
-        test_y = arrs['test_y']
-        preprocessor = trainer.preprocess()
-        return {'preprocessor':preprocessor,'train_test_arrays':arrs,'train_data':train_data,'test_data':test_data}
+        arrs = self.get_train_test_arrays(
+        self.train_data, self.test_data)
+        self.train_X = arrs['train_X']
+        self.train_y = arrs['train_y']
+        self.test_X = arrs['test_X']
+        self.test_y = arrs['test_y']
+        self.preprocessor = ColumnTransformer(transformers=self.transformers)
+
+        return {
+            'preprocessor':self.preprocessor,
+            'train_X' : self.train_X,
+            'train_y':self.train_y,
+            'test_X':self.test_X,
+            'test_y':self.test_y,
+            'train_data':self.train_data,
+            'test_data':self.test_data
+        }
     
     """
     ===========================================================================
     model estimation
     """
-    def run_nnet(self, preprocessor, train_X, train_y):
 
-        nnet_start = time.time()
-        
-        nnet_model = MLPRegressor()
-            
-        nnet_pipeline = Pipeline([
-            ("preprocessor", preprocessor),
-            ("regressor", nnet_model)
-            ])
-        
-        nnet_scaled = TransformedTargetRegressor(
-            regressor=nnet_pipeline,
-            transformer=self.target_transformer_pipeline 
-        )
-        
-        model_fit = nnet_scaled.fit(train_X, train_y)
-        nnet_end = time.time()
-        nnet_runtime = nnet_end - nnet_start
-        print(f"cpu: {nnet_runtime}")
-        return model_fit
-
-    def run_dnn(self, preprocessor,train_X,train_y,print_details=True):
+    def run_dnn(self, print_details=True):
         if print_details == True:
             print('\ntraining...\n')
             for p,v in self.dnn_params.items():
                 print(f"{p}: {v}")
         dnn_start = time.time()
-        deepnnet_model = MLPRegressor(**self.dnn_params)
+        self.regressor = MLPRegressor(**self.dnn_params)
                                   
-        dnn_pipeline = Pipeline([
-            ("preprocessor", preprocessor),
-            ("regressor", deepnnet_model)
+        self.pipeline = Pipeline([
+            ("preprocessor", self.preprocessor),
+            ("regressor", self.regressor)
         ])
         
-        dnn_scaled = TransformedTargetRegressor(
-            regressor=dnn_pipeline,
+        self.model = TransformedTargetRegressor(
+            regressor=self.pipeline,
             transformer=self.target_transformer_pipeline 
         )
         
-        model_fit = dnn_scaled.fit(train_X,train_y)
+        self.model_fit = self.model.fit(self.train_X,self.train_y)
         dnn_end = time.time()
-        dnn_runtime = dnn_end - dnn_start
+        self.dnn_runtime = dnn_end - dnn_start
         if print_details==True:
             print(f"cpu: {dnn_runtime}")
-        return model_fit
-    
-    def run_rf(self, preprocessor, train_X, train_y):
-        rf_start = time.time()
-        
-        rf_model = RandomForestRegressor()
-        
-        rf_pipeline = Pipeline([
-            ("preprocessor", preprocessor),
-            ("regressor", rf_model)])
-        
-        rf_scaled = TransformedTargetRegressor(
-            regressor=rf_pipeline,
-            transformer=self.target_transformer_pipeline 
-        )
-        
-        model_fit = rf_scaled.fit(train_X, train_y)
-        
-        rf_end = time.time()
-        rf_runtime = rf_end - rf_start
-        print(f"cpu: {rf_runtime}")
-        return model_fit
-    
-    def run_lm(self, train_X, train_y):
-        lm_start = time.time()
-        lm_pipeline = Pipeline([
-            ("polynomial", PolynomialFeatures(degree=5, interaction_only=False, include_bias=True)),
-            ("scaler", StandardScaler()),
-            ("regressor", Lasso(alpha=self.alpha))
-        ])
-        
-        lm_scaled = TransformedTargetRegressor(
-            regressor=lm_pipeline,
-            transformer=self.target_transformer_pipeline 
-        )
-
-        model_fit = lm_scaled.fit(train_X, train_y)
-        lm_end = time.time()
-        lm_runtime = lm_end - lm_start
-        print(f"cpu: {lm_runtime}")
-        return model_fit
-
+        return self.model_fit
 
     """
     ===========================================================================
@@ -267,40 +231,3 @@ class convsklearn:
         test_data['outofsample_error'] = outofsample_diff
         
         return {'train_data':train_data,'test_data':test_data}
-        
-    def test_model(self,test_data,test_X,test_y,model_fit):
-        training_results = test_X.copy()
-        training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
-        training_results['target'] = test_y
-        training_results['prediciton'] = np.maximum(model_fit.predict(test_X),0)
-        training_results['abs_relative_error'] = abs(
-            training_results['prediciton']/training_results['target']-1)
-        
-        descriptive_stats = training_results['abs_relative_error'].describe()
-        test_count = int(descriptive_stats['count'])
-        descriptive_stats = descriptive_stats[1:]
-        pd.set_option('display.float_format', '{:.10f}'.format)
-        print(
-            f"\nresults:\n--------\ntest data count: {test_count}"
-            f"\n{descriptive_stats}\n"
-            )
-        pd.reset_option('display.float_format')
-        
-        return training_results
-
-    def plot_model_performance(
-            self, df, X_name, Y_name, xlabel, ylabel, runtime, title):
-        predictive_performance_plot = (
-            ggplot(df, 
-                   aes(x=X_name, y=Y_name)) + 
-            geom_point(alpha=0.05) + 
-            labs(x=xlabel, 
-                 y=ylabel,
-                 title=title) + 
-            theme(legend_position="")
-            )
-        predictive_performance_plot.show()
-        plt.cla()
-        plt.clf()
-        return predictive_performance_plot    
-

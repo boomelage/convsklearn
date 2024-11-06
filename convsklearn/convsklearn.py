@@ -26,53 +26,19 @@ class convsklearn:
     """
     def __init__(
             self,
-            target_name=None,
-            numerical_features=None,
-            categorical_features=None
+            target_name='observed_price',
+            excluded_features=['barrier_price','asian','observed_price']
             ):
-        if target_name is not 'target_name':
-            self.target_name = target_name
-        else:
-            self.target_name = 'target_name'
 
-        if numerical_features is not None:
-            self.numerical_features = numerical_features
-        else:
-            self.numerical_features = []
-
-        if categorical_features is not None:
-            self.categorical_features = categorical_features
-        else:
-            self.categorical_features = []
-
-        if len(self.numerical_features)+len(self.categorical_features)>0:
-            self.feature_set = self.numerical_features + self.categorical_features
-            self.n_features = len(self.feature_set)
-        else:
-            self.feature_set = []
-            self.n_features = 0
-
-        self.dnn_params = {
-            'alpha': 0.01, 
-            'hidden_layer_sizes': (self.n_features, self.n_features), 
-            'learning_rate': 'adaptive', 
-            'learning_rate_init': 0.1, 
-            'solver': 'sgd',
-            'early_stopping': False, 
-            'max_iter': 500,
-            'warm_start': True,
-            'tol': 0.0001
-        }
-        
-        self.transformers = [
-            ("StandardScaler",StandardScaler(),self.numerical_features),
-            ("OneHotEncoder", OneHotEncoder(
-                sparse_output=False),self.categorical_features)
-        ]
-
-        self.target_transformer_pipeline = Pipeline([
-                ("StandardScaler", StandardScaler()),
-                ])
+        self.dataset = pd.DataFrame()
+        self.target_name = target_name
+        self.excluded_features = excluded_features
+        self.numerical_features=[]
+        self.categorical_features=[]
+        self.feature_set=[]
+        self.n_features=0
+        self.development_dates = {}
+        self.test_dates = {}
         self.train_data = {}
         self.test_data = {}
         self.train_X = {}
@@ -84,49 +50,69 @@ class convsklearn:
         self.model = None
         self.model_fit = None
         self.dnn_runtime = 0
+        self.numerical_scaler = StandardScaler()
 
+    def load_data(self,data):
+        self.dataset = data.dropna().copy()
+        self.dataset['calculation_date'] = pd.to_datetime(self.dataset['calculation_date'],format='mixed',errors='coerce')
+        self.dataset['date'] = pd.to_datetime(self.dataset['date'],format='mixed',errors='coerce')
+        features = self.dataset.dtypes.reset_index(drop=False)
+
+        self.numerical_features = features[
+            (features[features.columns[-1]]==int)
+            |(features[features.columns[-1]]==float)
+        ].iloc[:,0].tolist()
+
+        self.numerical_features = [f for f in self.numerical_features if f not in self.excluded_features]
+
+        self.categorical_features = features[
+            (features[features.columns[-1]]==object)
+        ].iloc[:,0].tolist()
+
+        self.categorical_features = [f for f in self.categorical_features if f not in self.excluded_features]
+
+        self.feature_set = self.numerical_features + self.categorical_features
+        
+        self.n_features = len(self.feature_set)
+
+        self.dnn_params = {
+            'alpha': 0.01, 
+            'hidden_layer_sizes': (self.n_features,self.n_features,),
+            'learning_rate': 'adaptive', 
+            'learning_rate_init': 0.1, 
+            'solver': 'sgd',
+            'early_stopping': False, 
+            'max_iter': 500,
+            'warm_start': True,
+            'tol': 0.0001
+        }
+
+
+        self.transformers = [
+            ("StandardScaler",self.numerical_scaler,self.numerical_features),
+            ("OneHotEncoder", OneHotEncoder(sparse_output=False),self.categorical_features)
+        ]
+        
 
     """            
     ===========================================================================
     preprocessing
     """
 
-    def get_train_test_arrays(self,
-            train_data, test_data,
-            feature_set=None, target_name=None
-            ):
+
+    def preprocess_data(self,development_dates,test_dates):
         
-        if feature_set == None:
-            feature_set = self.feature_set
-            if len(feature_set)==0:
-                raise('no feautres specified')
-        if target_name == None:
-            target_name = self.target_name
-            if target_name == None:
-                raise('no target specified')
+        self.development_dates = pd.to_datetime(development_dates,format='mixed')
+        self.test_dates = pd.to_datetime(test_dates,format='mixed')
 
-        test_X = test_data[feature_set]
-        test_y = test_data[target_name]
-        train_X = train_data[feature_set]
-        train_y = train_data[target_name]
-        return {
-            'train_X':train_X, 
-            'train_y':train_y, 
-            'test_X':test_X, 
-            'test_y':test_y
-        }
-
-
-    def preprocess_data(self,dataset,development_dates,test_dates):
-        self.dataset = dataset
-        self.development_dates = development_dates
-        self.test_dates = test_dates
         try:
-            self.train_data = dataset[dataset['date'].isin(development_dates)].sort_values(by='date')
-            self.test_data = dataset[dataset['date'].isin(test_dates)].sort_values(by='date')
+            self.dataset['date'] = pd.to_datetime(self.dataset['date'],format='mixed')
+            self.train_data = self.dataset[self.dataset['date'].isin(development_dates)].sort_values(by='date')
+            self.test_data = self.dataset[self.dataset['date'].isin(test_dates)].sort_values(by='date')
         except Exception:
-            self.train_data = dataset[dataset['calculation_date'].isin(development_dates)].sort_values(by='calculation_date')
-            self.test_data = dataset[dataset['calculation_date'].isin(test_dates)].sort_values(by='calculation_date')
+            self.dataset['calculation_date'] = pd.to_datetime(self.dataset['calculation_date'],format='mixed')
+            self.train_data = self.dataset[self.dataset['calculation_date'].isin(development_dates)].sort_values(by='calculation_date')
+            self.test_data = self.dataset[self.dataset['calculation_date'].isin(test_dates)].sort_values(by='calculation_date')
 
         trainplotx = pd.date_range(start=min(self.development_dates),end=max(self.development_dates),periods=self.train_data.shape[0])
         testplotx = pd.date_range(start=min(self.test_dates),end=max(self.test_dates),periods=self.test_data.shape[0])
@@ -137,24 +123,19 @@ class convsklearn:
         plt.xticks(rotation=45)
         plt.legend(loc='upper left')
         plt.show()
-        arrs = self.get_train_test_arrays(
-        self.train_data, self.test_data)
-        self.train_X = arrs['train_X']
-        self.train_y = arrs['train_y']
-        self.test_X = arrs['test_X']
-        self.test_y = arrs['test_y']
+
+        self.test_X = self.test_data[self.feature_set]
+        self.test_y = self.test_data[self.target_name]
+        self.train_X = self.train_data[self.feature_set]
+        self.train_y = self.train_data[self.target_name]
         self.preprocessor = ColumnTransformer(transformers=self.transformers)
 
-        return {
-            'preprocessor':self.preprocessor,
-            'train_X' : self.train_X,
-            'train_y':self.train_y,
-            'test_X':self.test_X,
-            'test_y':self.test_y,
-            'train_data':self.train_data,
-            'test_data':self.test_data
-        }
-    
+
+    # def resample_data(self,dec=0,div=1):
+    #     self.dataset['round_spot'] = np.round(div*self.dataset['spot_price'],dec)//div
+    #     subset = ['round_spot','date'] + self.feature_set[1:]
+    #     self.dataset = self.dataset.sort_values(by='calculation_date',ascending=False).drop_duplicates(subset=subset,keep='first').reset_index(drop=True)
+
     """
     ===========================================================================
     model estimation
@@ -168,22 +149,21 @@ class convsklearn:
         dnn_start = time.time()
         self.regressor = MLPRegressor(**self.dnn_params)
                                   
-        self.pipeline = Pipeline([
+        self.dnn_pipeline = Pipeline([
             ("preprocessor", self.preprocessor),
             ("regressor", self.regressor)
         ])
         
         self.model = TransformedTargetRegressor(
-            regressor=self.pipeline,
-            transformer=self.target_transformer_pipeline 
+            regressor=self.dnn_pipeline,
+            transformer=self.numerical_scaler
         )
         
-        self.model_fit = self.model.fit(self.train_X,self.train_y)
+        self.model_fit = self.model.fit(self.train_X,self.train_y.values)
         dnn_end = time.time()
         self.dnn_runtime = dnn_end - dnn_start
         if print_details==True:
             print(f"cpu: {self.dnn_runtime}")
-        return self.model_fit
 
     """
     ===========================================================================

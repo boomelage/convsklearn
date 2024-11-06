@@ -27,9 +27,9 @@ class convsklearn:
     def __init__(
             self,
             target_name='observed_price',
-            excluded_features=['barrier_price','asian','observed_price','outin','updown']
+            excluded_features=['barrier_price','asian','observed_price','outin','updown','n_fixings']
             ):
-
+        self.raw_data = pd.DataFrame()
         self.dataset = pd.DataFrame()
         self.target_name = target_name
         self.excluded_features = excluded_features
@@ -53,7 +53,8 @@ class convsklearn:
         self.numerical_scaler = StandardScaler()
 
     def load_data(self,data):
-        self.dataset = data.dropna().copy()
+        self.raw_data = data
+        self.dataset = self.raw_data.dropna().copy()
         self.dataset['calculation_date'] = pd.to_datetime(self.dataset['calculation_date'],format='mixed',errors='coerce')
         self.dataset['date'] = pd.to_datetime(self.dataset['date'],format='mixed',errors='coerce')
         features = self.dataset.dtypes.reset_index(drop=False)
@@ -132,12 +133,6 @@ class convsklearn:
         self.train_X = self.train_data[self.feature_set]
         self.train_y = self.train_data[self.target_name]
         self.preprocessor = ColumnTransformer(transformers=self.transformers)
-
-
-    # def resample_data(self,dec=0,div=1):
-    #     self.dataset['round_spot'] = np.round(div*self.dataset['spot_price'],dec)//div
-    #     subset = ['round_spot','date'] + self.feature_set[1:]
-    #     self.dataset = self.dataset.sort_values(by='calculation_date',ascending=False).drop_duplicates(subset=subset,keep='first').reset_index(drop=True)
 
     """
     ===========================================================================

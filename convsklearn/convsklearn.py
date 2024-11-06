@@ -27,7 +27,7 @@ class convsklearn:
     def __init__(
             self,
             target_name='observed_price',
-            excluded_features=['barrier_price','asian','observed_price']
+            excluded_features=['barrier_price','asian','observed_price','outin','updown']
             ):
 
         self.dataset = pd.DataFrame()

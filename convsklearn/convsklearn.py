@@ -100,19 +100,22 @@ class convsklearn:
     """
 
 
-    def preprocess_data(self,development_dates,test_dates):
-        
-        self.development_dates = pd.to_datetime(development_dates,format='mixed')
-        self.test_dates = pd.to_datetime(test_dates,format='mixed')
+    def preprocess_data(self, development_dates, test_dates):
+        self.development_dates = development_dates
+        self.test_dates = test_dates
+        development_dates_dt = pd.to_datetime(self.development_dates, errors='coerce')
+        test_dates_dt = pd.to_datetime(self.test_dates, errors='coerce')
 
         try:
-            self.dataset['date'] = pd.to_datetime(self.dataset['date'],format='mixed')
-            self.train_data = self.dataset[self.dataset['date'].isin(development_dates)].sort_values(by='date')
-            self.test_data = self.dataset[self.dataset['date'].isin(test_dates)].sort_values(by='date')
+            self.dataset['date'] = pd.to_datetime(self.dataset['date'], format='mixed', errors='coerce')
+            self.train_data = self.dataset[self.dataset['date'].isin(development_dates_dt)].sort_values(by='date')
+            self.test_data = self.dataset[self.dataset['date'].isin(test_dates_dt)].sort_values(by='date')
+
         except Exception:
-            self.dataset['calculation_date'] = pd.to_datetime(self.dataset['calculation_date'],format='mixed')
-            self.train_data = self.dataset[self.dataset['calculation_date'].isin(development_dates)].sort_values(by='calculation_date')
-            self.test_data = self.dataset[self.dataset['calculation_date'].isin(test_dates)].sort_values(by='calculation_date')
+            self.dataset['calculation_date'] = pd.to_datetime(self.dataset['calculation_date'], format='mixed', errors='coerce')
+            self.train_data = self.dataset[self.dataset['calculation_date'].isin(development_dates_dt)].sort_values(by='calculation_date')
+            self.test_data = self.dataset[self.dataset['calculation_date'].isin(test_dates_dt)].sort_values(by='calculation_date')
+
 
         trainplotx = pd.date_range(start=min(self.development_dates),end=max(self.development_dates),periods=self.train_data.shape[0])
         testplotx = pd.date_range(start=min(self.test_dates),end=max(self.test_dates),periods=self.test_data.shape[0])

@@ -192,7 +192,7 @@ class convsklearn:
     
     def test_prediction_accuracy(self):
         
-        insample_prediction = np.maximum(model_fit.predict(self.train_X),0)
+        insample_prediction = np.maximum(self.model_fit.predict(self.train_X),0)
         insample_diff = insample_prediction - self.train_y
         insample_RMSE = np.sqrt(np.average(insample_diff**2))
         insample_MAE = np.average(np.abs(insample_diff))

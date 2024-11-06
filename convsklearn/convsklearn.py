@@ -141,7 +141,7 @@ class convsklearn:
 
     def run_dnn(self, print_details=True):
         if print_details == True:
-            print('\ntraining...\n')
+            print(f'\ntraining on {train_X.shape[0]} samples...\n')
             for p,v in self.dnn_params.items():
                 print(f"{p}: {v}")
         dnn_start = time.time()

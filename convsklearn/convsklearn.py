@@ -101,7 +101,7 @@ class convsklearn:
     """
 
 
-    def preprocess_data(self, development_dates, test_dates):
+    def preprocess_data(self, development_dates, test_dates,plot=True):
         self.development_dates = development_dates
         self.test_dates = test_dates
         development_dates_dt = pd.to_datetime(self.development_dates, errors='coerce')
@@ -117,22 +117,23 @@ class convsklearn:
             self.train_data = self.dataset[self.dataset['calculation_date'].isin(development_dates_dt)].sort_values(by='calculation_date')
             self.test_data = self.dataset[self.dataset['calculation_date'].isin(test_dates_dt)].sort_values(by='calculation_date')
 
-
-        trainplotx = pd.date_range(start=min(self.development_dates),end=max(self.development_dates),periods=self.train_data.shape[0])
-        testplotx = pd.date_range(start=min(self.test_dates),end=max(self.test_dates),periods=self.test_data.shape[0])
-
-        plt.figure()
-        plt.plot(testplotx,self.test_data['spot_price'].values,color='purple',label='out-of-sample')
-        plt.plot(trainplotx,self.train_data['spot_price'].values,color='green',label='in-sample')
-        plt.xticks(rotation=45)
-        plt.legend(loc='upper left')
-        plt.show()
-
         self.test_X = self.test_data[self.feature_set]
         self.test_y = self.test_data[self.target_name]
         self.train_X = self.train_data[self.feature_set]
         self.train_y = self.train_data[self.target_name]
         self.preprocessor = ColumnTransformer(transformers=self.transformers)
+
+        if plot == True:
+            trainplotx = pd.date_range(start=min(self.development_dates),end=max(self.development_dates),periods=self.train_data.shape[0])
+            testplotx = pd.date_range(start=min(self.test_dates),end=max(self.test_dates),periods=self.test_data.shape[0])
+            plt.figure()
+            plt.plot(testplotx,self.test_data['spot_price'].values,color='purple',label='out-of-sample')
+            plt.plot(trainplotx,self.train_data['spot_price'].values,color='green',label='in-sample')
+            plt.xticks(rotation=45)
+            plt.legend(loc='upper left')
+            plt.show()
+
+
 
     """
     ===========================================================================

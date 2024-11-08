@@ -27,8 +27,10 @@ class convsklearn:
     def __init__(
             self,
             target_name='observed_price',
-            excluded_features=['barrier_price','asian','observed_price','outin','updown','n_fixings']
+            excluded_features=['barrier_price','asian','observed_price','outin','updown','n_fixings'],
+            seed=1312,
             ):
+        self.seed = seed
         self.raw_data = pd.DataFrame()
         self.dataset = pd.DataFrame()
         self.target_name = target_name
@@ -87,6 +89,8 @@ class convsklearn:
             'warm_start': True,
             'tol': 0.0001
         }
+        if self.seed != None:
+            self.dnn_params['random_state'] = self.seed
 
 
         self.transformers = [

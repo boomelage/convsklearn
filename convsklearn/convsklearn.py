@@ -50,8 +50,8 @@ class convsklearn:
         self.preprocessor = None
         self.pipeline = None
         self.model = None
-        self.model_fit = None
-        self.dnn_runtime = 0
+        self.fitted = None
+        self.runtime = 0
         self.numerical_scaler = StandardScaler()
 
     def load_data(self,data):
@@ -144,7 +144,7 @@ class convsklearn:
     model estimation
     """
 
-    def run_dnn(self, print_details=True):
+    def fit_scaled_target_mlp(self, print_details=True):
         if print_details == True:
             print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
             for p,v in self.dnn_params.items():
@@ -162,12 +162,30 @@ class convsklearn:
             transformer=self.numerical_scaler
         )
         
-        self.model_fit = self.model.fit(self.train_X,self.train_y.values)
+        self.fitted = self.model.fit(self.train_X,self.train_y.values)
         dnn_end = time.time()
-        self.dnn_runtime = dnn_end - dnn_start
+        self.runtime = dnn_end - dnn_start
         if print_details==True:
-            print(f"cpu: {self.dnn_runtime}")
+            print(f"cpu: {self.runtime}")
 
+    def fit_mlp(self, print_details=True):
+        if print_details == True:
+            print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
+            for p,v in self.dnn_params.items():
+                print(f"{p}: {v}")
+        mlp_start = time.time()
+        
+        self.regressor = MLPRegressor(**self.dnn_params)         
+        self.model = Pipeline([
+            ("preprocessor", self.preprocessor),
+            ("regressor", self.regressor)
+        ])
+        self.fitted = self.model.fit(self.train_X,self.train_y.values)
+        
+        mlp_end = time.time()
+        self.runtime = mlp_end - mlp_start
+        if print_details==True:
+            print(f"cpu: {self.runtime}")
     """
     ===========================================================================
     standard model testing
@@ -175,12 +193,12 @@ class convsklearn:
     
     def test_prediction_accuracy(self):
         
-        insample_prediction = np.maximum(self.model_fit.predict(self.train_X),0)
+        insample_prediction = np.maximum(self.fitted.predict(self.train_X),0)
         insample_diff = insample_prediction - self.train_y
         insample_RMSE = np.sqrt(np.average(insample_diff**2))
         insample_MAE = np.average(np.abs(insample_diff))
         
-        outofsample_prediction = np.maximum(self.model_fit.predict(self.test_X),0)
+        outofsample_prediction = np.maximum(self.fitted.predict(self.test_X),0)
         outofsample_diff = outofsample_prediction-self.test_y
         outofsample_RMSE = np.sqrt(np.average(outofsample_diff**2))
         outofsample_MAE = np.average(np.abs(outofsample_diff))

@@ -35,7 +35,6 @@ class hypertuning():
         }
         self.search_parameters = {
             'estimator':self.model,
-            'param_grid':self.param_grid,
             'cv':5,
             'scoring':"neg_mean_squared_error",
             'n_jobs':max(1,os.cpu_count()//4),
@@ -44,6 +43,7 @@ class hypertuning():
 
     def tune(self):
         print('starting hypertuning')
+        self.search_parameters['param_grid'] = self.param_grid
         grid_search = GridSearchCV(**self.search_parameters)
         grid_search.fit(self.train_X, self.train_y)
         print("Best Parameters:", grid_search.best_params_)

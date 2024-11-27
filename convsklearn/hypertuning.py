@@ -47,3 +47,4 @@ class hypertuning():
         grid_search = GridSearchCV(**self.search_parameters)
         grid_search.fit(self.train_X, self.train_y)
         print("Best Parameters:", grid_search.best_params_)
+        return grid_search.best_params_

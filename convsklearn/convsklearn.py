@@ -53,6 +53,17 @@ class convsklearn:
         self.fitted = None
         self.runtime = 0
         self.numerical_scaler = StandardScaler()
+        self.mlp_params = {
+            'alpha': 0.01, 
+            'hidden_layer_sizes': (self.n_features,self.n_features,),
+            'learning_rate': 'adaptive', 
+            'learning_rate_init': 0.1, 
+            'solver': 'sgd',
+            'early_stopping': False, 
+            'max_iter': 500,
+            'warm_start': True,
+            'tol': 0.0001
+        }
 
     def load_data(self,data):
         self.raw_data = data
@@ -78,13 +89,10 @@ class convsklearn:
         
         self.n_features = len(self.feature_set)
 
-        self.mlp_params = {
-            'hidden_layer_sizes':(self.n_features, self.n_features,)
-        }
+        self.mlp_params.update({'hidden_layer_sizes':(self.n_features, self.n_features,)})
         
         if self.seed != None:
             self.mlp_params['random_state'] = self.seed
-
 
         self.transformers = [
             ("StandardScaler",self.numerical_scaler,self.numerical_features),

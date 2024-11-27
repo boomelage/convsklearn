@@ -1,3 +1,4 @@
+import os
 from sklearn.model_selection import GridSearchCV
 
 class hypertuning():
@@ -32,16 +33,17 @@ class hypertuning():
             'regressor__n_iter_no_change': [10, 20],
             'regressor__max_fun': [15000, 20000]
         }
+        self.search_parameters = {
+            'estimator':self.model,
+            'param_grid':self.param_grid,
+            'cv':5,
+            'scoring':"neg_mean_squared_error",
+            'n_jobs':max(1,os.cpu_count()//4),
+            'verbose':1
+        }
 
     def tune(self):
         print('starting hypertuning')
-        grid_search = GridSearchCV(
-            estimator=self.model,
-            param_grid=self.param_grid,
-            cv=5,
-            scoring="neg_mean_squared_error",
-            n_jobs=-1,
-            verbose=1
-        )
+        grid_search = GridSearchCV(**self.search_parameters)
         grid_search.fit(self.train_X, self.train_y)
         print("Best Parameters:", grid_search.best_params_)

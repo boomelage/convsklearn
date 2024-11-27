@@ -78,26 +78,18 @@ class convsklearn:
         
         self.n_features = len(self.feature_set)
 
-        self.dnn_params = {
-            'alpha': 0.01, 
-            'hidden_layer_sizes': (self.n_features,self.n_features,),
-            'learning_rate': 'adaptive', 
-            'learning_rate_init': 0.1, 
-            'solver': 'sgd',
-            'early_stopping': False, 
-            'max_iter': 500,
-            'warm_start': True,
-            'tol': 0.0001
+        self.mlp_params = {
+            'hidden_layer_sizes':(self.n_features, self.n_features,)
         }
+        
         if self.seed != None:
-            self.dnn_params['random_state'] = self.seed
+            self.mlp_params['random_state'] = self.seed
 
 
         self.transformers = [
             ("StandardScaler",self.numerical_scaler,self.numerical_features),
             ("OneHotEncoder", OneHotEncoder(sparse_output=False),self.categorical_features)
         ]
-        
 
     """            
     ===========================================================================
@@ -147,10 +139,10 @@ class convsklearn:
     def fit_scaled_target_mlp(self, print_details=True):
         if print_details == True:
             print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
-            for p,v in self.dnn_params.items():
+            for p,v in self.mlp_params.items():
                 print(f"{p}: {v}")
         dnn_start = time.time()
-        self.regressor = MLPRegressor(**self.dnn_params)
+        self.regressor = MLPRegressor(**self.mlp_params)
                                   
         self.dnn_pipeline = Pipeline([
             ("preprocessor", self.preprocessor),
@@ -171,11 +163,11 @@ class convsklearn:
     def fit_mlp(self, print_details=True):
         if print_details == True:
             print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
-            for p,v in self.dnn_params.items():
+            for p,v in self.mlp_params.items():
                 print(f"{p}: {v}")
         mlp_start = time.time()
         
-        self.regressor = MLPRegressor(**self.dnn_params)         
+        self.regressor = MLPRegressor(**self.mlp_params)         
         self.model = Pipeline([
             ("preprocessor", self.preprocessor),
             ("regressor", self.regressor)

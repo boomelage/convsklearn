@@ -47,4 +47,4 @@ class hypertuning():
         grid_search = GridSearchCV(**self.search_parameters)
         grid_search.fit(self.train_X, self.train_y)
         print("Best Parameters:", grid_search.best_params_)
-        return grid_search.best_params_
+        return {key[2+key.find('__',0):]:value for key,value in grid_search.best_params_.items()}

@@ -5,7 +5,7 @@ class hypertuning():
     def __init__(self,model,train_X,train_y):
         self.train_X = train_X
         self.train_y = train_y
-        self.model = model['model']
+        self.model = model
         self.param_grid = {
             'regressor__activation': [
                 'identity', 

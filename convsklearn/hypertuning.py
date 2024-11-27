@@ -2,9 +2,9 @@ import os
 from sklearn.model_selection import GridSearchCV
 
 class hypertuning():
-    def __init__(self,model):
-        self.train_X = model['train_X']
-        self.train_y = model['train_y']
+    def __init__(self,model,train_X,train_y):
+        self.train_X = train_X
+        self.train_y = train_y
         self.model = model['model']
         self.param_grid = {
             'regressor__activation': [

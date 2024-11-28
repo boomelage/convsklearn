@@ -54,15 +54,7 @@ class convsklearn:
         self.runtime = 0
         self.numerical_scaler = StandardScaler()
         self.mlp_params = {
-            'alpha': 0.01, 
-            'hidden_layer_sizes': (self.n_features,self.n_features,),
-            'learning_rate': 'adaptive', 
-            'learning_rate_init': 0.1, 
-            'solver': 'sgd',
-            'early_stopping': False, 
-            'max_iter': 500,
-            'warm_start': True,
-            'tol': 0.0001
+            'hidden_layer_sizes': (10,10,),
         }
 
     def load_data(self,data):
@@ -88,8 +80,6 @@ class convsklearn:
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.n_features = len(self.feature_set)
-
-        self.mlp_params.update({'hidden_layer_sizes':(self.n_features, self.n_features,)})
         
         if self.seed != None:
             self.mlp_params['random_state'] = self.seed
@@ -99,7 +89,7 @@ class convsklearn:
             ("OneHotEncoder", OneHotEncoder(sparse_output=False),self.categorical_features)
         ]
 
-    """            
+    """
     ===========================================================================
     preprocessing
     """

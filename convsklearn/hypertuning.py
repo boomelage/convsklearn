@@ -40,7 +40,7 @@ class hypertuning():
         self.search_parameters = {
             'estimator':self.model,
             'cv':5,
-            'scoring':"neg_mean_squared_error",
+            'scoring':"neg_root_mean_squared_error",
             'n_jobs':max(1,os.cpu_count()//4),
             'verbose':1
         }

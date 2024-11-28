@@ -9,7 +9,8 @@ class tune_mlp():
 		ms.find_root(Path())
 		self.models_dir = os.path.join(ms.root,ms.trained_models)
 		self.models = [f for f in os.listdir(self.models_dir) if f.find('Legacy')==-1 and not f.startswith('.')]
-		print(self.models)
+		for i,m in enumerate(self.models):
+			print(f"{i}   {m}")
 
 	def tune(self, index):
 		self.model_dir = os.path.join(self.models_dir,self.models[index])

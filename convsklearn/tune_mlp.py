@@ -8,7 +8,10 @@ class tune_mlp():
 	def __init__(self):
 		ms.find_root(Path())
 		self.models_dir = os.path.join(ms.root,ms.trained_models)
-		self.models = [f for f in os.listdir(self.models_dir) if f.find('Legacy')==-1 and not f.startswith('.')]
+		try:
+			self.models = [f for f in os.listdir(self.models_dir) if f.find('Legacy')==-1 and not f.startswith('.')]
+		except Exception:
+			self.models_dir = os.path.join(ms.root,ms.MacDirEx,ms.trained_models)
 		self.param_grid = {
 		    'regressor__learning_rate': ['constant', 'invscaling', 'adaptive'],
 		    'regressor__learning_rate_init': [0.001, 0.01, 0.1],

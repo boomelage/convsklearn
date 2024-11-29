@@ -4,7 +4,6 @@ def relativize(data):
 	pricename = [f for f in data.columns if f.find('_price')!=-1 and f.find('spot_')==-1 and f.find('strike_')==-1][0]
 	relative_pricename = 'relative_'+pricename
 	data = data[data[pricename]<=data['spot_price']]
-	print(f'collected {pricename[:pricename.find('_',0)]} options')
 
 	data_strikes = data['strike_price']
 	data['relative_spot'] = data['spot_price']/data_strikes

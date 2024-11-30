@@ -159,24 +159,23 @@ class convsklearn:
         if print_details==True:
             print(f"cpu: {self.runtime}")
 
-    def fit_mlp(self, print_details=True):
-        if print_details == True:
-            print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
-            for p,v in self.mlp_params.items():
-                print(f"{p}: {v}")
-        mlp_start = time.time()
-        
+    def construct_mlp(self):
         self.regressor = MLPRegressor(**self.mlp_params)         
         self.model = Pipeline([
             ("preprocessor", self.preprocessor),
             ("regressor", self.regressor)
         ])
+
+    def fit_mlp(self, print_details=True):
+        if print_details == True:
+            print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
+            for p,v in self.mlp_params.items():
+                print(f"{p}: {v}")
+        self.mlp_start = time.time()
         self.fitted = self.model.fit(self.train_X,self.train_y.values)
-        
-        mlp_end = time.time()
-        self.runtime = mlp_end - mlp_start
-        if print_details==True:
-            print(f"cpu: {self.runtime}")
+        self.mlp_end = time.time()
+        self.runtime = self.mlp_end - self.mlp_start
+        print(f"cpu: {self.runtime}")
     """
     ===========================================================================
     standard model testing

@@ -2,7 +2,7 @@ import os
 import joblib
 from pathlib import Path
 from model_settings import ms
-from convsklearn.hypertuning import hypertuning
+from .hypertuning import hypertuning
 
 class tune_mlp():
 	def __init__(self):
@@ -13,12 +13,14 @@ class tune_mlp():
 		except Exception:
 			self.models_dir = os.path.join(ms.root,ms.MacDirEx,ms.trained_models)
 		self.param_grid = {
+			'regressor__hidden_layer_sizes':[(10),(10,10),(20),(20,20),(30),(30,30)],
 		    'regressor__learning_rate': ['constant', 'invscaling', 'adaptive'],
 		    'regressor__learning_rate_init': [0.001, 0.01, 0.1],
 		    'regressor__early_stopping': [False, True],
 		    'regressor__tol': [0.0001, 0.001, 0.01],
 		    'regressor__n_iter_no_change': [10, 20],
 		    'regressor__power_t': [0.5, 0.25],
+		    'regressor__warm_start':[False, True]
 		}
 		for i,m in enumerate(self.models):
 			print(f"{i}   {m}")

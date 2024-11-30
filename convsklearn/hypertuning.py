@@ -13,6 +13,7 @@ class hypertuning():
                 'tanh', 
                 'relu'
             ],
+            'regressor__hidden_layer_sizes' : [(10,10),(20,20),(30,30)]
             'regressor__solver': ['lbfgs', 'sgd',],
             'regressor__alpha': [0.0001, 0.001, 0.01, 0.1],
             

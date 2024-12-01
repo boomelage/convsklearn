@@ -1,4 +1,4 @@
-from relativize import unrelativize
+from .relativize import unrelativize
 
 import os
 import joblib
@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from sklearn.inspection import permutation_importance
 from sklearn.inspection import PartialDependenceDisplay
-import plotly.express as px
-
 
 def compute_RMSE(diff):
     if len(diff)>0:
@@ -22,6 +20,31 @@ def compute_MAE(diff):
 
 
 class test:
+	"""
+
+	example usage
+
+
+from model_settings import ms
+from pathlib import Path
+import os
+ms.find_root(Path())
+models_dir = os.path.join(ms.root,ms.trained_models)
+models = pd.Series([f for f in os.listdir(models_dir) if not f.startswith('.') and f.find('Legacy')])
+for i,m in enumerate(models):
+    print(f"{i}     {m}")
+selected_model = models.iloc[0]
+directory = os.path.join(models_dir,selected_model)
+
+os.chdir(ms.root)
+print(os.getcwd())
+
+tester = test(directory=directory)
+tester.load_model(verbose=True)
+tester.plot_resutls()
+
+	"""
+
 	def __init__(self,directory,retraining_frequency=20):
 		self.retraining_frequency = retraining_frequency
 		self.model_dir = directory
@@ -54,11 +77,13 @@ class test:
 
 	def plot_pairs(self):
 		pairplot_upper = sns.pairplot(self.upper[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(r"pairs_lower.png", dpi=600)
+		plt.savefig(os.path.abspath(r"pairs_lower.png"), dpi=600)
+		plt.close()
 		print('saved lower')
 		pairplot_lower = sns.pairplot(self.lower[['kappa','theta','rho','eta','v0','outofsample_error']])
 		plt.savefig(os.path.abspath(r"pairs_upper.png"), dpi=600)
 		print('saved upper')
+		plt.close()
 
 	def plot_dists(self):
 		sns.kdeplot(data=self.test_data, x='observed_price', label='Estimated', color='purple')
@@ -75,6 +100,7 @@ class test:
 		plt.legend()
 		plt.savefig(r"price_dist_zoom.png")
 		plt.close()
+		print('saved price distributions')
 
 	def plot_importances(self):
 		r = permutation_importance(self.initial, self.train_data[self.model['feature_set']], self.train_data[self.model['target_name']],
@@ -85,18 +111,20 @@ class test:
 		importances = pd.DataFrame(data=r['importances'],index=self.model['feature_set']).T
 		importances_mean = pd.Series(r['importances_mean'],index=self.model['feature_set'])
 		importances_std = pd.Series(r['importances_std'],index=self.model['feature_set'])
-		fig = px.box(
-		    importances[self.model['feature_set']],
-		    height=1000,
-		    width=1200,
-		    facet_col_spacing=0,
-		    facet_row_spacing=0,
-		    notched=True,
-		    title=f'Feature Importance for {self.security_tag}'
+		print('importances computed')
+		plt.figure(figsize=(12, 10))  # Set figure size
+		sns.boxplot(
+		    data=importances[self.model['feature_set']],
+		    notch=True
 		)
-		fig.update_xaxes(title='Feature')
-		fig.update_yaxes(title='')
-		fig.write_image("feature_importance.png", scale=6.25)
+		plt.title(f'Feature Importance for {self.security_tag}', fontsize=16)
+		plt.xlabel('Feature', fontsize=14)
+		plt.ylabel('', fontsize=14)
+		plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
+		plt.tight_layout()  # Adjust layout to prevent overlap
+		plt.savefig("feature_importance.png", dpi=625)  # Save the figure
+		plt.close()
+		print('saved importances')
 
 	def plot_dependancies(self):
 		common_params = {
@@ -126,38 +154,13 @@ class test:
 			fontsize=16,
 		)
 		display.figure_.savefig("partial_dependence.png", dpi=600)
+		plt.close()
+		print('saved dependencies')
 
 	def plot_resutls(self):
+		self.plot_importances()
 		self.plot_dists()
-		self.plot_dependancies()
 		self.plot_pairs()
-
-"""
-usage
-"""
-
-from model_settings import ms
-from pathlib import Path
-import os
-ms.find_root(Path())
-models_dir = os.path.join(ms.root,ms.trained_models)
-models = pd.Series([f for f in os.listdir(models_dir) if not f.startswith('.') and f.find('Legacy')])
-for i,m in enumerate(models):
-    print(f"{i}     {m}")
-selected_model = models.iloc[0]
-directory = os.path.join(models_dir,selected_model)
-
-
-
-os.chdir(ms.root)
-print(os.getcwd())
-
-tester = test(directory=directory)
-tester.load_model(verbose=True)
-tester.plot_resutls()
-
-
-"""
-sandbox
-"""
+		self.plot_dependancies()
+		
 

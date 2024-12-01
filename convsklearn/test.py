@@ -7,6 +7,10 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
+from sklearn.inspection import permutation_importance
+from sklearn.inspection import PartialDependenceDisplay
+import plotly.express as px
+
 
 def compute_RMSE(diff):
     if len(diff)>0:
@@ -40,22 +44,93 @@ class test:
 		self.train_data = self.train_data.set_index('calculation_date').sort_index()
 		self.test_dates = self.test_data['date'].drop_duplicates().reset_index(drop=True)
 		self.n = len(self.test_dates)//self.retraining_frequency
+		self.security_tag = self.pricename[:self.pricename.find('_')].title()+' Options'
 		self.dump = os.path.join(self.wdir,f"{self.pricename[:self.pricename.find('_')]} analysis")
 		if not os.path.exists(self.dump):
 			os.mkdir(self.dump)
 		os.chdir(self.dump)
-
-	def split_quantiles(self):
 		self.lower = self.test_data[self.test_data['outofsample_error']<self.test_data['outofsample_error'].describe()['50%']].copy()
 		self.upper = self.test_data[self.test_data['outofsample_error']>self.test_data['outofsample_error'].describe()['50%']].copy()
 
 	def plot_pairs(self):
 		pairplot_upper = sns.pairplot(self.upper[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(r"lower.png", dpi=600)
+		plt.savefig(r"pairs_lower.png", dpi=600)
 		print('saved lower')
 		pairplot_lower = sns.pairplot(self.lower[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(r"upper.png"), dpi=600)
+		plt.savefig(os.path.abspath(r"pairs_upper.png"), dpi=600)
 		print('saved upper')
+
+	def plot_dists(self):
+		sns.kdeplot(data=self.test_data, x='observed_price', label='Estimated', color='purple')
+		sns.histplot(data=self.test_data, x=self.pricename, label='Target', color='green', stat='density', alpha=0.5)
+		plt.legend()
+		plt.savefig(r"price_dist.png")
+		plt.close()
+		train_zoom = self.test_data[
+		    (self.test_data['relative_observed']>0.05)
+		    &(self.test_data['relative_observed']<0.5)
+		]
+		sns.kdeplot(data=train_zoom, x='observed_price', label='Estimated', color='purple')
+		sns.histplot(data=train_zoom, x=self.pricename, label='Target', color='green', stat='density', alpha=0.5)
+		plt.legend()
+		plt.savefig(r"price_dist_zoom.png")
+		plt.close()
+
+	def plot_importances(self):
+		r = permutation_importance(self.initial, self.train_data[self.model['feature_set']], self.train_data[self.model['target_name']],
+                           n_repeats=30,
+                           random_state=1312,
+                           scoring='neg_mean_squared_error'
+                          )
+		importances = pd.DataFrame(data=r['importances'],index=self.model['feature_set']).T
+		importances_mean = pd.Series(r['importances_mean'],index=self.model['feature_set'])
+		importances_std = pd.Series(r['importances_std'],index=self.model['feature_set'])
+		fig = px.box(
+		    importances[self.model['feature_set']],
+		    height=1000,
+		    width=1200,
+		    facet_col_spacing=0,
+		    facet_row_spacing=0,
+		    notched=True,
+		    title=f'Feature Importance for {self.security_tag}'
+		)
+		fig.update_xaxes(title='Feature')
+		fig.update_yaxes(title='')
+		fig.write_image("feature_importance.png", scale=6.25)
+
+	def plot_dependancies(self):
+		common_params = {
+			"subsample": 50,
+			"n_jobs": 2,
+			"grid_resolution": 20,
+			"random_state": 0,
+		}
+		PDPfeatures = [f for f in self.model['numerical_features']]
+		features_info = {
+			"features": PDPfeatures,
+			"kind": "average",
+			"categorical_features":self.model['categorical_features']
+		}
+		_, ax = plt.subplots(figsize=(9, 9), constrained_layout=True)
+		display = PartialDependenceDisplay.from_estimator(
+			self.initial,
+			self.model['train_X'],
+			**features_info,
+			ax=ax,
+			**common_params,
+		)
+		_ = display.figure_.suptitle(
+			(
+				f"Partial dependence for {self.security_tag}"
+			),
+			fontsize=16,
+		)
+		display.figure_.savefig("partial_dependence.png", dpi=600)
+
+	def plot_resutls(self):
+		self.plot_dists()
+		self.plot_dependancies()
+		self.plot_pairs()
 
 """
 usage
@@ -79,42 +154,10 @@ print(os.getcwd())
 
 tester = test(directory=directory)
 tester.load_model(verbose=True)
-tester.split_quantiles()
-tester.plot_pairs()
+tester.plot_resutls()
+
 
 """
 sandbox
 """
 
-
-
-
-
-# cols = ['outofsample_MAE','outofsample_RMSE']
-# df = pd.DataFrame()
-# models = {}
-
-# for i in range(0,test.n):
-#     subset_test_dates = pd.to_datetime(test.model['test_dates'][(i*test.retraining_frequency):(i+1)*test.retraining_frequency],format='fixed')
-#     subset_test = test.test_data[test.test_data['date'].isin(subset_test_dates)]
-    
-#     target = subset_test['relative_observed']
-#     prediction = test.initial.predict(subset_test[test.model['feature_set']])
-    
-#     error = prediction-target
-    
-#     predicted_price = prediction*subset_test['strike_price']
-#     pricing_error = prediction-subset_test[test.pricename]
-    
-#     date = subset_test_dates.iloc[0]
-#     df.at[date,'outofsample_MAE'] = compute_MAE(error)
-#     df.at[date,'outofsample_RMSE'] = compute_RMSE(error)
-#     df.at[date,'avgsqrtv0'] = np.mean(np.sqrt(subset_test['v0']))
-#     for col in [
-#         'rho','theta',
-#         'spot_price'
-#     ]:
-#         df.at[date,f"avg_{col}"] = np.mean(subset_test[col])
-
-# df.index = pd.to_datetime(df.index)
-# print(df)

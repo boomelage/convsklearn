@@ -1,4 +1,4 @@
-from convsklearn import train
+from .train import train
 import os
 from time import time
 from model_settings import ms

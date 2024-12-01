@@ -17,3 +17,7 @@ def relativize(data):
 	data['calculation_date'] = pd.to_datetime(data['calculation_date'],format='mixed')
 	data['date'] = pd.to_datetime(data['date'],format='mixed')
 	return data
+
+def unrelativize(data):
+	data['observed_price'] = data['relative_observed']*data['strike_price']
+	return data

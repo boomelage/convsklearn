@@ -68,7 +68,8 @@ tester.plot_resutls()
 		self.test_dates = self.test_data['date'].drop_duplicates().reset_index(drop=True)
 		self.n = len(self.test_dates)//self.retraining_frequency
 		self.security_tag = self.pricename[:self.pricename.find('_')].title()+' Options'
-		self.dump = os.path.join(self.wdir,f"{self.pricename[:self.pricename.find('_')]} analysis")
+		self.file_tag = f"{self.pricename[:self.pricename.find('_')]} analysis"
+		self.dump = os.path.join(self.wdir,self.file_tag)
 		if not os.path.exists(self.dump):
 			os.mkdir(self.dump)
 		os.chdir(self.dump)
@@ -77,11 +78,11 @@ tester.plot_resutls()
 
 	def plot_pairs(self):
 		pairplot_upper = sns.pairplot(self.upper[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(r"pairs_lower.png"), dpi=600)
+		plt.savefig(os.path.abspath(f"{self.file_tag}_pairs_lower.png"), dpi=600)
 		plt.close()
 		print('saved lower')
 		pairplot_lower = sns.pairplot(self.lower[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(r"pairs_upper.png"), dpi=600)
+		plt.savefig(os.path.abspath(f"{self.file_tag}_pairs_upper.png"), dpi=600)
 		print('saved upper')
 		plt.close()
 
@@ -89,7 +90,7 @@ tester.plot_resutls()
 		sns.kdeplot(data=self.test_data, x='observed_price', label='Estimated', color='purple')
 		sns.histplot(data=self.test_data, x=self.pricename, label='Target', color='green', stat='density', alpha=0.5)
 		plt.legend()
-		plt.savefig(r"price_dist.png")
+		plt.savefig(f"{self.file_tag} price_dist.png")
 		plt.close()
 		train_zoom = self.test_data[
 		    (self.test_data['relative_observed']>0.05)
@@ -98,7 +99,7 @@ tester.plot_resutls()
 		sns.kdeplot(data=train_zoom, x='observed_price', label='Estimated', color='purple')
 		sns.histplot(data=train_zoom, x=self.pricename, label='Target', color='green', stat='density', alpha=0.5)
 		plt.legend()
-		plt.savefig(r"price_dist_zoom.png")
+		plt.savefig(f"{self.file_tag} price_dist_zoom.png")
 		plt.close()
 		print('saved price distributions')
 
@@ -122,7 +123,7 @@ tester.plot_resutls()
 		plt.ylabel('', fontsize=14)
 		plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
 		plt.tight_layout()  # Adjust layout to prevent overlap
-		plt.savefig("feature_importance.png", dpi=625)  # Save the figure
+		plt.savefig(f"{self.file_tag} feature_importance.png", dpi=625)  # Save the figure
 		plt.close()
 		print('saved importances')
 
@@ -153,7 +154,7 @@ tester.plot_resutls()
 			),
 			fontsize=16,
 		)
-		display.figure_.savefig("partial_dependence.png", dpi=600)
+		display.figure_.savefig(f"{self.file_tag} partial_dependence.png", dpi=600)
 		plt.close()
 		print('saved dependencies')
 

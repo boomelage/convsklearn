@@ -10,8 +10,8 @@ ms.find_root(Path())
 df_collector.root = ms.root
 raw = df_collector.cboe_spx_barriers().iloc[:,1:]
 train = train()
-train.load_data(raw,verbose=False)
-train.construct(verbose=False,plot=False)
+train.load_data(raw,verbose=True)
+train.construct(verbose=True,plot=False)
 train.fit()
 train.test_fit()
 train.save_model(dir=os.path.join(ms.root,ms.trained_models))

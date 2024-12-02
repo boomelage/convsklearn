@@ -48,7 +48,6 @@ class convsklearn:
         self.test_X = {}
         self.test_y = {}
         self.preprocessor = None
-        self.pipeline = None
         self.model = None
         self.fitted = None
         self.runtime = 0

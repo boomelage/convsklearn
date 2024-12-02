@@ -74,7 +74,7 @@ train.save_model(dir=os.path.join(ms.root,ms.trained_models))
 		if verbose != False:
 			print('instance variables:')
 			for key, value in self.trainer.__dict__.items():
-				print(f"{key}:\n  {value}\n")
+				print(f"{key}:\n{value}\n")
 
 	def fit(self):
 		self.m = {'train_X':self.trainer.train_X,'train_y':self.trainer.train_y,'model':self.trainer.model}

@@ -135,10 +135,12 @@ class convsklearn:
     model estimation
     """
 
-    def construct_mlp(self):     
+    def construct_mlp(self):
+        self.regressor = MLPRegressor(**self.mlp_params)
+        self.regressor.out_activation_ = 'relu'
         self.model = Pipeline([
             ("preprocessor", self.preprocessor),
-            ("regressor", MLPRegressor(**self.mlp_params) )
+            ("regressor", self.regressor)
         ])
 
     def fit_mlp(self, print_details=True):
@@ -151,6 +153,8 @@ class convsklearn:
         self.mlp_end = time.time()
         self.runtime = self.mlp_end - self.mlp_start
         print(f"cpu: {self.runtime}")
+
+    
     """
     ===========================================================================
     standard model testing

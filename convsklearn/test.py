@@ -73,18 +73,15 @@ tester.plot_resutls()
 		if not os.path.exists(self.dump):
 			os.mkdir(self.dump)
 		os.chdir(self.dump)
-		self.lower = self.test_data[self.test_data['outofsample_error']<self.test_data['outofsample_error'].describe()['50%']].copy()
-		self.upper = self.test_data[self.test_data['outofsample_error']>self.test_data['outofsample_error'].describe()['50%']].copy()
+		# self.lower = self.test_data[self.test_data['outofsample_error']<self.test_data['outofsample_error'].describe()['50%']].copy()
+		# self.upper = self.test_data[self.test_data['outofsample_error']>self.test_data['outofsample_error'].describe()['50%']].copy()
 
-	def plot_pairs(self):
-		pairplot_upper = sns.pairplot(self.upper[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(f"{self.file_tag} pairs_lower.png"), dpi=600)
+	def scatter(self):
+		print(self.test_data.dtypes)
+		sns.pairplot(self.test_data[[self.model['target_name'],'outofsample_prediction']],hue='days_to_maturity')
+		plt.savefig(os.path.abspath(f"{self.file_tag} scatter.png"), dpi=600)
 		plt.close()
 		print('saved lower')
-		pairplot_lower = sns.pairplot(self.lower[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(f"{self.file_tag} pairs_upper.png"), dpi=600)
-		print('saved upper')
-		plt.close()
 
 	def plot_dists(self):
 		sns.kdeplot(data=self.test_data, x='observed_price', label='Estimated', color='purple')
@@ -161,7 +158,7 @@ tester.plot_resutls()
 	def plot_resutls(self):
 		self.plot_importances()
 		self.plot_dists()
-		self.plot_pairs()
+		self.scatter()
 		self.plot_dependancies()
 		
 

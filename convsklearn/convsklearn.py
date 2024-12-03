@@ -53,7 +53,8 @@ class convsklearn:
         self.runtime = 0
         self.numerical_scaler = StandardScaler()
         self.mlp_params = {
-            'hidden_layer_sizes': (10,10,),
+            'activation':'relu',
+            'hidden_layer_sizes': (10,),
             'max_iter': 500
         }
 

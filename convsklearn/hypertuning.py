@@ -7,6 +7,7 @@ class hypertuning():
         self.train_y = model['train_y']
         self.model = model['model']
         self.param_grid = {
+            'regressor__activation':['relu'],
             'regressor__hidden_layer_sizes':[(10,), (10, 10), (10, 10, 10), (20,), (20, 20), (20, 20, 20), (30,), (30, 30), (30, 30, 30)],
             'regressor__learning_rate': [
                 'constant', 

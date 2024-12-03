@@ -78,6 +78,7 @@ train.save_model(dir=os.path.join(ms.root,ms.trained_models))
 
 	def fit(self):
 		self.m = {'train_X':self.trainer.train_X,'train_y':self.trainer.train_y,'model':self.trainer.model}
+		print(self.trainer.model)
 		self.hyper = hypertuning(self.m)
 		self.trainer.mlp_params.update(self.hyper.tune())
 		self.trainer.construct_mlp()

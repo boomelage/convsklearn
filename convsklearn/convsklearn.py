@@ -53,8 +53,8 @@ class convsklearn:
         self.runtime = 0
         self.numerical_scaler = StandardScaler()
         self.mlp_params = {
+            'solver':'sgd',
             'activation':'relu',
-            'hidden_layer_sizes': (10,),
             'max_iter': 500
         }
 
@@ -135,35 +135,10 @@ class convsklearn:
     model estimation
     """
 
-    def fit_scaled_target_mlp(self, print_details=True):
-        if print_details == True:
-            print(f'\ntraining on {self.train_X.shape[0]} samples...\n')
-            for p,v in self.mlp_params.items():
-                print(f"{p}: {v}")
-        dnn_start = time.time()
-        self.regressor = MLPRegressor(**self.mlp_params)
-                                  
-        self.dnn_pipeline = Pipeline([
-            ("preprocessor", self.preprocessor),
-            ("regressor", self.regressor)
-        ])
-        
-        self.model = TransformedTargetRegressor(
-            regressor=self.dnn_pipeline,
-            transformer=self.numerical_scaler
-        )
-        
-        self.fitted = self.model.fit(self.train_X,self.train_y.values)
-        dnn_end = time.time()
-        self.runtime = dnn_end - dnn_start
-        if print_details==True:
-            print(f"cpu: {self.runtime}")
-
-    def construct_mlp(self):
-        self.regressor = MLPRegressor(**self.mlp_params)         
+    def construct_mlp(self):     
         self.model = Pipeline([
             ("preprocessor", self.preprocessor),
-            ("regressor", self.regressor)
+            ("regressor", MLPRegressor(**self.mlp_params) )
         ])
 
     def fit_mlp(self, print_details=True):

@@ -78,11 +78,11 @@ tester.plot_resutls()
 
 	def plot_pairs(self):
 		pairplot_upper = sns.pairplot(self.upper[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(f"{self.file_tag}_pairs_lower.png"), dpi=600)
+		plt.savefig(os.path.abspath(f"{self.file_tag} pairs_lower.png"), dpi=600)
 		plt.close()
 		print('saved lower')
 		pairplot_lower = sns.pairplot(self.lower[['kappa','theta','rho','eta','v0','outofsample_error']])
-		plt.savefig(os.path.abspath(f"{self.file_tag}_pairs_upper.png"), dpi=600)
+		plt.savefig(os.path.abspath(f"{self.file_tag} pairs_upper.png"), dpi=600)
 		print('saved upper')
 		plt.close()
 

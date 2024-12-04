@@ -12,3 +12,4 @@ from .plot_errors import plot_errors
 from .tune_mlp import tune_mlp
 from .relativize import relativize
 from .train import train
+from .load_model import load_model

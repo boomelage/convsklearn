@@ -73,15 +73,13 @@ tester.plot_resutls()
 		if not os.path.exists(self.dump):
 			os.mkdir(self.dump)
 		os.chdir(self.dump)
-		# self.lower = self.test_data[self.test_data['outofsample_error']<self.test_data['outofsample_error'].describe()['50%']].copy()
-		# self.upper = self.test_data[self.test_data['outofsample_error']>self.test_data['outofsample_error'].describe()['50%']].copy()
 
 	def scatter(self):
 		print(self.test_data.dtypes)
-		sns.pairplot(self.test_data[[self.model['target_name'],'outofsample_prediction']],hue='days_to_maturity')
+		sns.pairplot(self.test_data,vars=[self.model['target_name'],'outofsample_prediction','relative_spot'],hue='days_to_maturity')
 		plt.savefig(os.path.abspath(f"{self.file_tag} scatter.png"), dpi=600)
 		plt.close()
-		print('saved lower')
+		print('saved scatter')
 
 	def plot_dists(self):
 		sns.kdeplot(data=self.test_data, x='observed_price', label='Estimated', color='purple')
@@ -110,7 +108,7 @@ tester.plot_resutls()
 		importances_mean = pd.Series(r['importances_mean'],index=self.model['feature_set'])
 		importances_std = pd.Series(r['importances_std'],index=self.model['feature_set'])
 		print('importances computed')
-		plt.figure(figsize=(12, 10))  # Set figure size
+		plt.figure(figsize=(12, 10))
 		sns.boxplot(
 		    data=importances[self.model['feature_set']],
 		    notch=True
@@ -120,7 +118,7 @@ tester.plot_resutls()
 		plt.ylabel('', fontsize=14)
 		plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
 		plt.tight_layout()  # Adjust layout to prevent overlap
-		plt.savefig(f"{self.file_tag} feature_importance.png", dpi=625)  # Save the figure
+		plt.savefig(f"{self.file_tag} feature_importance.png", dpi=625)
 		plt.close()
 		print('saved importances')
 

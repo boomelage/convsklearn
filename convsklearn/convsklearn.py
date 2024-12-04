@@ -28,7 +28,7 @@ class convsklearn:
             self,
             target_name='observed_price',
             excluded_features=['barrier_price','asian_price','observed_price','outin','updown','n_fixings','barrier_cpu','asian_cpu'],
-            seed=1312,
+            seed=710,
             ):
         self.seed = seed
         self.raw_data = pd.DataFrame()

@@ -136,12 +136,11 @@ class convsklearn:
     """
 
     def construct_mlp(self):
-        self.regressor = MLPRegressor(**self.mlp_params)
-        self.regressor.out_activation_ = 'relu'
         self.model = Pipeline([
             ("preprocessor", self.preprocessor),
-            ("regressor", self.regressor)
+            ("regressor", MLPRegressor(**self.mlp_params))
         ])
+        
 
     def fit_mlp(self, print_details=True):
         if print_details == True:
@@ -185,5 +184,3 @@ class convsklearn:
         self.test_data['outofsample_target'] = self.test_y
         self.test_data['outofsample_prediction'] = outofsample_prediction
         self.test_data['outofsample_error'] = outofsample_diff
-        
-        return {'train_data':self.train_data,'test_data':self.test_data}

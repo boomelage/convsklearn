@@ -8,7 +8,7 @@ class hypertuning():
         self.model = model['model']
         self.param_grid = {
             'regressor__activation':['relu'],
-            'regressor__hidden_layer_sizes':[(10,), (10, 10), (10, 10, 10), (20,), (20, 20), (20, 20, 20), (30,), (30, 30), (30, 30, 30)],
+            'regressor__hidden_layer_sizes':[(200,),(200,200,),(300,),(300,300,)],
             'regressor__learning_rate': [
                 'constant', 
                 # 'invscaling', 
@@ -31,6 +31,8 @@ class hypertuning():
 
     def tune(self):
         print('starting hypertuning')
+        for i,p in self.param_grid.items():
+            print(f"{i}\n{p}\n\n")
         self.search_parameters['param_grid'] = self.param_grid
         grid_search = GridSearchCV(**self.search_parameters)
         grid_search.fit(self.train_X, self.train_y)
